@@ -18,7 +18,7 @@ import {
   EuiIcon,
   EuiCard,
   EuiTab,
-  EuiTabs,
+  EuiTabbedContent,
 } from '@elastic/eui';
 import React, { useEffect, useState } from 'react';
 import { DATASOURCES_BASE } from '../../../../common/constants/shared';
@@ -48,11 +48,6 @@ export const DataSource = (props: any) => {
   }, []);
 
   const tabs = [
-    {
-      id: 'data',
-      name: 'Data',
-      disabled: false,
-    },
     {
       id: 'access_control',
       name: 'Access control',
@@ -167,9 +162,25 @@ export const DataSource = (props: any) => {
                 onClick={() => (window.location.hash = `/acceleration/${dataSource}`)}
               />
             </EuiFlexItem>
+            <EuiFlexItem>
+              <EuiCard
+                icon={<EuiIcon size="xxl" type="database" />}
+                title={'Tables'}
+                description="Manually Define Tables"
+                onClick={() => (window.location.href = `/app/opensearch-query-workbench`)}
+              />
+            </EuiFlexItem>
+            <EuiFlexItem>
+              <EuiCard
+                icon={<EuiIcon size="xxl" type="discoverApp" />}
+                title={'Integrations data'}
+                description="Auto Define via Integrations"
+                onClick={() => (window.location.href = `/app/integrations`)}
+              />
+            </EuiFlexItem>
           </EuiFlexGroup>
         </EuiAccordion>
-        <EuiTabs>{renderTabs()}</EuiTabs>
+        <EuiTabbedContent tabs={tabs} initialSelectedTab={tabs[0]} autoFocus="selected" />
 
         <EuiSpacer />
       </EuiPageBody>
