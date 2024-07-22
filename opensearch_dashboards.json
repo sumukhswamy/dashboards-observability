@@ -1,7 +1,7 @@
 {
   "id": "observabilityDashboards",
-  "version": "3.0.0.0",
-  "opensearchDashboardsVersion": "3.0.0",
+  "version": "2.12.0.0",
+  "opensearchDashboardsVersion": "2.12.0",
   "server": true,
   "ui": true,
   "requiredPlugins": [
@@ -19,5 +19,6 @@
     "visualizations"
   ],
   "optionalPlugins": ["managementOverview", "assistantDashboards", "securityDashboards", "dataSource", "dataSourceManagement"],
-  "configPath": ["observability"]
+  "configPath": ["observability"],
+  "supportedOSDataSourceVersions": ">=2.9.0"
 }
