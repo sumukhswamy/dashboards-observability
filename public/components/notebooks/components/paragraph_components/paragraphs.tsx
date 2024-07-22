@@ -24,11 +24,18 @@ import {
 import filter from 'lodash/filter';
 import moment from 'moment';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { CoreStart, MountPoint, SavedObjectsStart } from '../../../../../../../src/core/public';
+import semver from 'semver';
+import {
+  CoreStart,
+  MountPoint,
+  SavedObject,
+  SavedObjectsStart,
+} from '../../../../../../../src/core/public';
 import {
   DashboardContainerInput,
   DashboardStart,
 } from '../../../../../../../src/plugins/dashboard/public';
+import { DataSourceAttributes } from '../../../../../../../src/plugins/data_source/common/data_sources';
 import { DataSourceManagementPluginSetup } from '../../../../../../../src/plugins/data_source_management/public';
 import { ViewMode } from '../../../../../../../src/plugins/embeddable/public';
 import { NOTEBOOKS_API_PREFIX } from '../../../../../common/constants/notebooks';
@@ -39,6 +46,7 @@ import {
 } from '../../../../../common/constants/shared';
 import { ParaType } from '../../../../../common/types/notebooks';
 import { uiSettingsService } from '../../../../../common/utils';
+import * as pluginManifest from '../../../../../opensearch_dashboards.json';
 import PPLService from '../../../../services/requests/ppl';
 import { SavedObjectsActions } from '../../../../services/saved_objects/saved_object_client/saved_objects_actions';
 import { ObservabilitySavedVisualization } from '../../../../services/saved_objects/saved_object_client/types';
@@ -549,6 +557,11 @@ export const Paragraphs = forwardRef((props: ParagraphProps, ref) => {
     setDataSourceMDSId(dataConnectionId);
     handleSelectedDataSourceChange(dataConnectionId, dataConnectionLabel);
   };
+  const dataSourceFilterFn = (dataSource: SavedObject<DataSourceAttributes>) => {
+    const dataSourceVersion = dataSource?.attributes?.dataSourceVersion || '';
+    return semver.satisfies(dataSourceVersion, pluginManifest.supportedOSDataSourceVersions);
+  };
+
   if (dataSourceEnabled) {
     DataSourceSelector = dataSourceManagement.ui.DataSourceSelector;
   }
@@ -564,11 +577,13 @@ export const Paragraphs = forwardRef((props: ParagraphProps, ref) => {
             disabled={false}
             fullWidth={false}
             removePrepend={true}
+            dataSourceFilter={dataSourceFilterFn}
             defaultOption={
               paradataSourceMDSId !== undefined && [
                 { id: paradataSourceMDSId, label: dataSourceMDSLabel },
               ]
             }
+            filter
           />
         )}
         <EuiSpacer size="s" />

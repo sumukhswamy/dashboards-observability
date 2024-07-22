@@ -19,5 +19,6 @@
     "visualizations"
   ],
   "optionalPlugins": ["managementOverview", "assistantDashboards", "securityDashboards", "dataSource", "dataSourceManagement"],
-  "configPath": ["observability"]
+  "configPath": ["observability"],
+  "supportedOSDataSourceVersions": ">=2.9.0"
 }
