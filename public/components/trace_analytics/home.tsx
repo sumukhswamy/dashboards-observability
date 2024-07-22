@@ -5,7 +5,7 @@
 
 import { EuiGlobalToastList } from '@elastic/eui';
 import { Toast } from '@elastic/eui/src/components/toast/global_toast_list';
-import React, { ReactChild, useEffect, useState } from 'react';
+import React, { ReactChild, useEffect, useMemo, useState } from 'react';
 import { HashRouter, Redirect, Route, RouteComponentProps } from 'react-router-dom';
 import semver from 'semver';
 import {
@@ -122,7 +122,9 @@ export const Home = (props: HomeProps) => {
     setToasts([...toasts, { id: new Date().toISOString(), title, text, color } as Toast]);
   };
 
-  const [dataSourceMDSId, setDataSourceMDSId] = useState([{ id: '', label: '' }]);
+  const [dataSourceMDSId, setDataSourceMDSId] = useState([
+    { id: '' || undefined, label: '' || undefined },
+  ]);
   const [currentSelectedService, setCurrentSelectedService] = useState('');
   const { defaultRoute = '/services' } = props;
   const { chrome } = props;
@@ -251,21 +253,36 @@ export const Home = (props: HomeProps) => {
     setSpanFlyout,
   };
 
-  const onSelectedDataSource = async (dataSources: DataSourceOption[]) => {
-    const { id = '', label = '' } = dataSources[0] || {};
-    if (dataSourceMDSId[0].id !== id || dataSourceMDSId[0].label !== label) {
-      setDataSourceMDSId([{ id, label }]);
-    }
+  const dataSourceFilterFn = (dataSource: SavedObject<DataSourceAttributes>) => {
+    const dataSourceVersion = dataSource?.attributes?.dataSourceVersion || '';
+    return semver.satisfies(dataSourceVersion, pluginManifest.supportedOSDataSourceVersions);
+  };
+
+  const onSelectedDataSource = async (dataSources: DataSourceOption) => {
+    const id = dataSources ? dataSources.id : undefined;
+    const label = dataSources ? dataSources.label : undefined;
+
+    setDataSourceMDSId([{ id, label }]);
   };
 
   const DataSourceMenu = props.dataSourceManagement?.ui?.getDataSourceMenu<
     DataSourceSelectableConfig
   >();
-
-  const dataSourceFilterFn = (dataSource: SavedObject<DataSourceAttributes>) => {
-    const dataSourceVersion = dataSource?.attributes?.dataSourceVersion || '';
-    return semver.satisfies(dataSourceVersion, pluginManifest.supportedOSDataSourceVersions);
-  };
+  const dataSourceMenuComponent = useMemo(() => {
+    return (
+      <DataSourceMenu
+        setMenuMountPoint={props.setActionMenu}
+        componentType={'DataSourceSelectable'}
+        componentConfig={{
+          savedObjects: props.savedObjectsMDSClient.client,
+          notifications: props.notifications,
+          fullWidth: true,
+          onSelectedDataSources: onSelectedDataSource,
+          dataSourceFilter: dataSourceFilterFn,
+        }}
+      />
+    );
+  }, [props.setActionMenu, props.savedObjectsMDSClient.client, props.notifications]);
 
   let flyout;
 
@@ -282,20 +299,7 @@ export const Home = (props: HomeProps) => {
 
   return (
     <>
-      {props.dataSourceEnabled && (
-        <DataSourceMenu
-          setMenuMountPoint={props.setActionMenu}
-          componentType={'DataSourceSelectable'}
-          componentConfig={{
-            savedObjects: props.savedObjectsMDSClient.client,
-            notifications: props.notifications,
-            fullWidth: true,
-            activeOption: dataSourceMDSId,
-            onSelectedDataSources: onSelectedDataSource,
-            dataSourceFilter: dataSourceFilterFn,
-          }}
-        />
-      )}
+      {props.dataSourceEnabled && dataSourceMenuComponent}
       <EuiGlobalToastList
         toasts={toasts}
         dismissToast={(removedToast) => {
