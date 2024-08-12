@@ -285,7 +285,7 @@ export class Main extends React.Component<MainProps, MainState> {
         console.error(err.body.message);
       });
   };
-  addSampleNotebooks = async () => {
+  addSampleNotebooks = async (_dataSourceMDSId?: string) => {
     try {
       this.setState({ loading: true });
       const flights = await this.props.http
@@ -393,6 +393,10 @@ export class Main extends React.Component<MainProps, MainState> {
                   parentBreadcrumb={this.props.parentBreadcrumb}
                   setBreadcrumbs={this.props.setBreadcrumbs}
                   setToast={this.setToast}
+                  dataSourceManagement={this.props.dataSourceManagement}
+                  notifications={this.props.notifications}
+                  dataSourceEnabled={this.props.dataSourceEnabled}
+                  savedObjectsMDSClient={this.props.savedObjectsMDSClient}
                 />
               )}
             />

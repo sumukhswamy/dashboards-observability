@@ -31,19 +31,25 @@ import truncate from 'lodash/truncate';
 import moment from 'moment';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { ChromeBreadcrumb } from '../../../../../../src/core/public';
+import {
+  ChromeBreadcrumb,
+  CoreStart,
+  MountPoint,
+  SavedObjectsStart,
+} from '../../../../../../src/core/public';
+import { DataSourceManagementPluginSetup } from '../../../../../../src/plugins/data_source_management/public';
 import {
   CREATE_NOTE_MESSAGE,
   NOTEBOOKS_DOCUMENTATION_URL,
 } from '../../../../common/constants/notebooks';
 import { UI_DATE_FORMAT, pageStyles } from '../../../../common/constants/shared';
+import { setNavBreadCrumbs } from '../../../../common/utils/set_nav_bread_crumbs';
 import {
   DeleteNotebookModal,
   getCustomModal,
   getSampleNotebooksModal,
 } from './helpers/modal_containers';
 import { NotebookType } from './main';
-import { setNavBreadCrumbs } from '../../../../common/utils/set_nav_bread_crumbs';
 
 interface NoteTableProps {
   loading: boolean;
@@ -56,6 +62,11 @@ interface NoteTableProps {
   deleteNotebook: (noteList: string[], toastMessage?: string) => void;
   parentBreadcrumb: ChromeBreadcrumb;
   setBreadcrumbs: (newBreadcrumbs: ChromeBreadcrumb[]) => void;
+  dataSourceEnabled: boolean;
+  dataSourceManagement: DataSourceManagementPluginSetup;
+  setActionMenu: (menuMount: MountPoint | undefined) => void;
+  savedObjectsMDSClient: SavedObjectsStart;
+  notifications: CoreStart['notifications'];
   // setToast: (title: string, color?: string, text?: string) => void;
 }
 
@@ -68,6 +79,10 @@ export function NoteTable({
   deleteNotebook,
   parentBreadcrumb,
   setBreadcrumbs,
+  dataSourceEnabled,
+  dataSourceManagement,
+  savedObjectsMDSClient,
+  notifications,
 }: NoteTableProps) {
   const [isModalVisible, setIsModalVisible] = useState(false); // Modal Toggle
   const [modalLayout, setModalLayout] = useState(<EuiOverlayMask />); // Modal Layout
@@ -76,6 +91,7 @@ export function NoteTable({
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const history = useHistory();
+  const [_dataSourceMDSId, _setDataSourceMDSId] = useState<string | undefined>('');
 
   useEffect(() => {
     setNavBreadCrumbs(
@@ -151,13 +167,22 @@ export function NoteTable({
     );
     showModal();
   };
-
+  // const  handleSelectedDataSourceChange = (id?: string, label?: string) => {
+  //   setDataSourceMDSId(id)
+  // };
   const addSampleNotebooksModal = async () => {
     setModalLayout(
-      getSampleNotebooksModal(closeModal, async () => {
-        closeModal();
-        await addSampleNotebooks();
-      })
+      getSampleNotebooksModal(
+        closeModal,
+        async () => {
+          closeModal();
+          await addSampleNotebooks();
+        },
+        dataSourceEnabled,
+        dataSourceManagement,
+        savedObjectsMDSClient,
+        notifications
+      )
     );
     showModal();
   };
