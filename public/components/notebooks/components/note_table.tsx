@@ -4,10 +4,9 @@
  */
 
 import {
-  EuiSmallButton,
+  EuiCompressedFieldSearch,
   EuiContextMenuItem,
   EuiContextMenuPanel,
-  EuiCompressedFieldSearch,
   EuiFlexGroup,
   EuiFlexItem,
   EuiHorizontalRule,
@@ -22,6 +21,7 @@ import {
   EuiPageHeader,
   EuiPageHeaderSection,
   EuiPopover,
+  EuiSmallButton,
   EuiSpacer,
   EuiTableFieldDataColumnType,
   EuiText,
@@ -54,7 +54,7 @@ import { NotebookType } from './main';
 interface NoteTableProps {
   loading: boolean;
   fetchNotebooks: () => void;
-  addSampleNotebooks: () => void;
+  addSampleNotebooks: (dataSourceMDSId: string | undefined) => void;
   notebooks: NotebookType[];
   createNotebook: (newNoteName: string) => void;
   renameNotebook: (newNoteName: string, noteId: string) => void;
@@ -91,7 +91,7 @@ export function NoteTable({
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const history = useHistory();
-  const [_dataSourceMDSId, _setDataSourceMDSId] = useState<string | undefined>('');
+  const [dataSourceMDSId, setDataSourceMDSId] = useState<string | undefined>('');
 
   useEffect(() => {
     setNavBreadCrumbs(
@@ -167,21 +167,26 @@ export function NoteTable({
     );
     showModal();
   };
-  // const  handleSelectedDataSourceChange = (id?: string, label?: string) => {
-  //   setDataSourceMDSId(id)
-  // };
+
   const addSampleNotebooksModal = async () => {
+    let selectedDataSourceId: string | undefined;
+    const  handleSelectedDataSourceChange = (id?: string, label?: string) => {
+      console.log('here',id)
+      selectedDataSourceId = id;
+      setDataSourceMDSId(id)
+    };
     setModalLayout(
       getSampleNotebooksModal(
         closeModal,
         async () => {
           closeModal();
-          await addSampleNotebooks();
+          await addSampleNotebooks(selectedDataSourceId);
         },
         dataSourceEnabled,
         dataSourceManagement,
         savedObjectsMDSClient,
-        notifications
+        notifications,
+        handleSelectedDataSourceChange
       )
     );
     showModal();

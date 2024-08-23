@@ -88,12 +88,17 @@ export const getSampleNotebooksModal = (
   dataSourceEnabled: boolean,
   dataSourceManagement: DataSourceManagementPluginSetup,
   savedObjectsMDSClient: SavedObjectsStart,
-  notifications: CoreStart['notifications']
+  notifications: CoreStart['notifications'],
+  handleSelectedDataSourceChange: (
+    dataSourceMDSId: string | undefined,
+    dataSourceMDSLabel: string | undefined
+  ) => void
 ) => {
   let DataSourceSelector;
   const onSelectedDataSource = (e) => {
     const dataConnectionId = e[0] ? e[0].id : undefined;
     const dataConnectionLabel = e[0] ? e[0].label : undefined;
+    handleSelectedDataSourceChange(dataConnectionId, dataConnectionLabel)
     console.log(dataConnectionId, dataConnectionLabel);
   };
 

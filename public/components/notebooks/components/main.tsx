@@ -285,7 +285,7 @@ export class Main extends React.Component<MainProps, MainState> {
         console.error(err.body.message);
       });
   };
-  addSampleNotebooks = async (_dataSourceMDSId?: string) => {
+  addSampleNotebooks = async (dataSourceMDSId?: string) => {
     try {
       this.setState({ loading: true });
       const flights = await this.props.http
